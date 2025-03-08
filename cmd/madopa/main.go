@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,7 @@ import (
 func main() {
 	inputFile := flag.String("input", "", "Input markdown file")
 	outputFile := flag.String("output", "", "Output HTML file")
+	serverFlag := flag.Bool("serve", false, "Serve the generated HTML file")
 	flag.Parse()
 
 	if *inputFile == "" {
@@ -44,9 +46,28 @@ func main() {
 	}
 
 	fmt.Printf("Successfully converted %s to %s \n", *inputFile, *outputFile)
+
+	if *serverFlag {
+		serverHTML(*outputFile)
+	}
 }
 
 func replaceExt(filename, newExt string) string {
 	ext := filepath.Ext(filename)
 	return strings.TrimSuffix(filename, ext) + newExt
+}
+
+func serverHTML(htmlFile string) {
+	fileServer := http.FileServer(http.Dir(filepath.Dir(htmlFile)))
+	http.Handle("/", fileServer)
+
+	baseName := filepath.Base(htmlFile)
+	fmt.Printf("Serving %s at http://localhost:3000/%s\n", htmlFile, baseName)
+	fmt.Println("Press Ctrl+C to stop the server")
+
+	err := http.ListenAndServe(":3000", nil)
+	if err != nil {
+		fmt.Printf("Error starting server: %v\n", err)
+		os.Exit(1)
+	}
 }
