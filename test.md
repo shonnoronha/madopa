@@ -11,3 +11,7 @@ _test italic 2_
 
 * Single opening tag
 ** Double opening tag
+
+```py
+print('hello world from code block')
+```

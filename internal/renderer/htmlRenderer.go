@@ -64,6 +64,19 @@ func (r *HTMLRenderer) renderBlock(block parser.Block) error {
 		}
 		r.buffer.WriteString("</p>\n")
 
+	case *parser.CodeBlock:
+		if b.Lang != "" {
+			r.buffer.WriteString(fmt.Sprintf("<pre><code class=\"%s\">", b.Lang))
+		} else {
+			r.buffer.WriteString("<pre><code>")
+		}
+		content := b.Code
+		if r.opts.EscapeHTML {
+			content = html.EscapeString(content)
+		}
+		r.buffer.WriteString(content)
+		r.buffer.WriteString("</code></pre>\n")
+
 	default:
 		r.buffer.WriteString(fmt.Sprintf("<!-- Unsupported block type: %T -->\n", b))
 	}
