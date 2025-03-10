@@ -128,38 +128,53 @@ func (p *parser) parseInline(text string) []Inline {
 				inlines = append(inlines, &BoldItalic{Content: p.parseInline(boldItalicText)})
 				i += (3 + end + 3)
 				continue
+			} else {
+				currentText.WriteString("***")
+				i += 3
+				continue
 			}
 		}
 
 		// Parse bold text
-		if strings.HasPrefix(text[i:], "**") {
+		if strings.HasPrefix(text[i:], "**") || strings.HasPrefix(text[i:], "__") {
+			marker := text[i : i+2]
 
 			if currentText.Len() > 0 {
 				inlines = append(inlines, &Text{Content: currentText.String()})
 				currentText.Reset()
 			}
 
-			end := strings.Index(text[i+2:], "**")
+			end := strings.Index(text[i+2:], marker)
 			if end != -1 {
 				boldText := text[i+2 : i+2+end]
 				inlines = append(inlines, &Bold{Content: p.parseInline(boldText)})
 				i += (2 + end + 2)
 				continue
+			} else {
+				currentText.WriteString(marker)
+				i += 2
+				continue
 			}
 		}
 
 		// Parse italic text
-		if strings.HasPrefix(text[i:], "_") {
+		if strings.HasPrefix(text[i:], "_") || strings.HasPrefix(text[i:], "*") {
+			marker := text[i : i+1]
+
 			if currentText.Len() > 0 {
 				inlines = append(inlines, &Text{Content: currentText.String()})
 				currentText.Reset()
 			}
 
-			end := strings.Index(text[i+1:], "_")
+			end := strings.Index(text[i+1:], marker)
 			if end != -1 {
 				italicText := text[i+1 : i+1+end]
 				inlines = append(inlines, &Italic{Content: p.parseInline(italicText)})
 				i += (1 + end + 1)
+				continue
+			} else {
+				currentText.WriteString(marker)
+				i++
 				continue
 			}
 		}
