@@ -81,6 +81,13 @@ func (r *HTMLRenderer) renderInlines(inlines []parser.Inline) error {
 			}
 			r.buffer.WriteString(content)
 
+		case *parser.BoldItalic:
+			r.buffer.WriteString("<strong><em>")
+			if err := r.renderInlines(i.Content); err != nil {
+				return err
+			}
+			r.buffer.WriteString("</em></strong>")
+
 		case *parser.Bold:
 			r.buffer.WriteString("<strong>")
 			if err := r.renderInlines(i.Content); err != nil {

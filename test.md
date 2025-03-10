@@ -1,5 +1,5 @@
 # Hello world
 
-hello world _this_ is a test for golang parser
+**_hello world *this* is a test for golang parser_**
 
 **hello _shons_ world**

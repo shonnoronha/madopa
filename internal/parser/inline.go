@@ -1,28 +1,32 @@
 package parser
 
 type Inline interface {
-    isInline()
+	isInline()
 }
 
 type Text struct {
-    Content string
+	Content string
 }
 
 type Bold struct {
-    Content []Inline
+	Content []Inline
 }
 
 type Italic struct {
-    Content []Inline
+	Content []Inline
+}
+
+type BoldItalic struct {
+	Content []Inline
 }
 
 type Link struct {
-    Text string
-    URL string
+	Text string
+	URL  string
 }
 
-func (t Text) isInline() {}
-func (b Bold) isInline() {}
-func (i Italic) isInline() {}
-func (l Link) isInline() {}
-
+func (t Text) isInline()       {}
+func (b Bold) isInline()       {}
+func (i Italic) isInline()     {}
+func (l Link) isInline()       {}
+func (b BoldItalic) isInline() {}

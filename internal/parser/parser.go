@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 	"unicode"
 )
@@ -29,7 +28,7 @@ func (p *parser) parse() (*Document, error) {
 		}
 
 		block, err := p.parseBlock()
-		fmt.Printf("Block type: %T\n", block)
+		// fmt.Printf("Block type: %T\n", block)
 		if err != nil {
 			return nil, err
 		}
@@ -116,6 +115,22 @@ func (p *parser) parseInline(text string) []Inline {
 	var i int
 
 	for i < len(text) {
+		// Nested bold and italic text
+		if strings.HasPrefix(text[i:], "***") {
+			if currentText.Len() > 0 {
+				inlines = append(inlines, &Text{Content: currentText.String()})
+				currentText.Reset()
+			}
+
+			end := strings.Index(text[i+3:], "***")
+			if end != -1 {
+				boldItalicText := text[i+3 : i+3+end]
+				inlines = append(inlines, &BoldItalic{Content: p.parseInline(boldItalicText)})
+				i += (3 + end + 3)
+				continue
+			}
+		}
+
 		// Parse bold text
 		if strings.HasPrefix(text[i:], "**") {
 
