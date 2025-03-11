@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"strings"
 	"unicode"
 )
@@ -33,9 +34,7 @@ func (p *parser) parse() (*Document, error) {
 			return nil, err
 		}
 
-		if block != nil {
-			doc.Blocks = append(doc.Blocks, block)
-		}
+		doc.Blocks = append(doc.Blocks, block)
 	}
 
 	return doc, nil
@@ -50,6 +49,26 @@ func (p *parser) parseBlock() (Block, error) {
 
 	if strings.HasPrefix(trimmedLine, "```") {
 		return p.parseCodeBlock()
+	}
+
+	if strings.Contains(trimmedLine, "|") {
+		currentPos := p.pos
+		currentLine := p.line
+
+		if p.pos < len(p.input) {
+			originalPos := p.pos
+			p.readLine()
+
+			if strings.Contains(p.line, "|") && strings.Contains(p.line, "-") {
+				p.pos = currentPos
+				p.line = currentLine
+				return p.parseTable()
+			}
+
+			// Restore the pos to the original position
+			p.pos = originalPos
+			p.readLine()
+		}
 	}
 
 	return p.parseParagraph()
@@ -200,4 +219,98 @@ func Parse(markdown string) (*Document, error) {
 		pos:   0,
 	}
 	return p.parse()
+}
+
+func (p *parser) parseTable() (*Table, error) {
+	headerLine := p.line
+	p.readLine()
+
+	delimiterLine := p.line
+
+	alignments := p.parseTableAlignments(delimiterLine)
+	headerCells := p.parseTableRow(headerLine)
+
+	if len(headerCells) != len(alignments) {
+		return nil, fmt.Errorf("number of header cells (%d) doesn't match number of columns in delimiter row (%d)",
+			len(headerCells), len(alignments))
+	}
+
+	var rows [][]TableCell
+
+	for p.pos < len(p.input) {
+		p.readLine()
+
+		// check for the end of the table
+		if p.line == "" || !strings.Contains(p.line, "|") {
+			break
+		}
+
+		row := p.parseTableRow(p.line)
+		if len(row) < len(headerCells) {
+			padded := make([]TableCell, len(headerCells))
+			copy(padded, row)
+			row = padded
+		} else if len(row) > len(headerCells) {
+			row = row[:len(headerCells)]
+		}
+
+		rows = append(rows, row)
+	}
+
+	return &Table{
+		Headers:    headerCells,
+		Rows:       rows,
+		Alignments: alignments,
+	}, nil
+}
+
+func (p *parser) parseTableRow(line string) []TableCell {
+	parts := strings.Split(line, "|")
+
+	if parts[0] == "" {
+		parts = parts[1:]
+	}
+	if parts[len(parts)-1] == "" {
+		parts = parts[:len(parts)-1]
+	}
+
+	cells := make([]TableCell, len(parts))
+	for i, part := range parts {
+		content := strings.TrimSpace(part)
+		cells[i] = TableCell{
+			Content: p.parseInline(content),
+		}
+	}
+	return cells
+}
+
+func (p *parser) parseTableAlignments(delimiterLine string) []Alignment {
+	parts := strings.Split(delimiterLine, "|")
+
+	if parts[0] == "" {
+		parts = parts[1:]
+	}
+	if parts[len(parts)-1] == "" {
+		parts = parts[:len(parts)-1]
+	}
+
+	alignments := make([]Alignment, len(parts))
+	for i, part := range parts {
+		part := strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		hasRight := strings.HasPrefix(part, ":")
+		hasLeft := strings.HasSuffix(part, ":")
+		if hasRight && hasLeft {
+			alignments[i] = AlignCenter
+		} else if hasLeft {
+			alignments[i] = AlignLeft
+		} else if hasRight {
+			alignments[i] = AlignRight
+		} else {
+			alignments[i] = AlignDefault
+		}
+	}
+	return alignments
 }

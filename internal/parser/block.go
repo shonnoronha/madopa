@@ -6,7 +6,7 @@ type Block interface {
 
 type Heading struct {
 	Level int
-	Text []Inline
+	Text  []Inline
 }
 
 type Paragraph struct {
@@ -19,7 +19,7 @@ type List struct {
 
 type ListItem struct {
 	Level int
-	Text []Inline
+	Text  []Inline
 }
 
 type CodeBlock struct {
@@ -27,9 +27,28 @@ type CodeBlock struct {
 	Code string
 }
 
-func (h Heading) isBlock() {}
-func (p Paragraph) isBlock() {}
-func (l List) isBlock() {}
-func (li ListItem) isBlock() {}	
-func (c CodeBlock) isBlock() {}
+type Table struct {
+	Headers    []TableCell
+	Rows       [][]TableCell
+	Alignments []Alignment
+}
 
+type TableCell struct {
+	Content []Inline
+}
+
+type Alignment int
+
+const (
+	AlignDefault Alignment = iota
+	AlignLeft
+	AlignCenter
+	AlignRight
+)
+
+func (h Heading) isBlock()   {}
+func (p Paragraph) isBlock() {}
+func (l List) isBlock()      {}
+func (li ListItem) isBlock() {}
+func (c CodeBlock) isBlock() {}
+func (t Table) isBlock()     {}
