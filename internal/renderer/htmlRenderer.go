@@ -77,6 +77,63 @@ func (r *HTMLRenderer) renderBlock(block parser.Block) error {
 		r.buffer.WriteString(content)
 		r.buffer.WriteString("</code></pre>\n")
 
+	case *parser.Table:
+		r.buffer.WriteString("<table>\n")
+
+		r.buffer.WriteString("<thead>\n")
+		r.buffer.WriteString("<tr>\n")
+
+		alignDir := ""
+
+		for i, cell := range b.Headers {
+			if i < len(b.Alignments) {
+				switch b.Alignments[i] {
+				case parser.AlignLeft:
+					alignDir = " align=\"left\""
+				case parser.AlignCenter:
+					alignDir = " align=\"center\""
+				case parser.AlignRight:
+					alignDir = " align=\"right\""
+				}
+			}
+			r.buffer.WriteString(fmt.Sprintf("<th%s>", alignDir))
+			if err := r.renderInlines(cell.Content); err != nil {
+				return err
+			}
+			r.buffer.WriteString("</th>\n")
+		}
+		r.buffer.WriteString("</tr>\n")
+		r.buffer.WriteString("</thead>\n")
+
+		if len(b.Rows) > 0 {
+			r.buffer.WriteString("<tbody>\n")
+			for _, row := range b.Rows {
+				r.buffer.WriteString("<tr>\n")
+				for i, cell := range row {
+					if i < len(b.Alignments) {
+						switch b.Alignments[i] {
+						case parser.AlignLeft:
+							alignDir = " align=\"left\""
+						case parser.AlignCenter:
+							alignDir = " align=\"center\""
+						case parser.AlignRight:
+							alignDir = " align=\"right\""
+						}
+					}
+					r.buffer.WriteString(fmt.Sprintf("<td%s>", alignDir))
+					if err := r.renderInlines(cell.Content); err != nil {
+						return err
+					}
+					r.buffer.WriteString("</td>\n")
+				}
+
+				r.buffer.WriteString("</tr>\n")
+			}
+			r.buffer.WriteString("</tbody>\n")
+		}
+
+		r.buffer.WriteString("</table>\n")
+
 	default:
 		r.buffer.WriteString(fmt.Sprintf("<!-- Unsupported block type: %T -->\n", b))
 	}
