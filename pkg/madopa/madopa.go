@@ -5,15 +5,13 @@ import (
 	"github.com/shonnnoronha/madopa/internal/renderer"
 )
 
-func ConvertToHTML(markdown string) (string, error) {
+func Convert(markdown string, renderer renderer.Renderer) (string, error) {
 	doc, err := parser.Parse(markdown)
 	if err != nil {
 		return "", err
 	}
 
-	htmlRenderer := renderer.NewHTMLRenderer(nil)
-
-	html, err := htmlRenderer.Render(doc)
+	html, err := renderer.Render(doc)
 	if err != nil {
 		return "", err
 	}

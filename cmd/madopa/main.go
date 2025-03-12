@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/shonnnoronha/madopa/internal/renderer"
 	"github.com/shonnnoronha/madopa/pkg/madopa"
 )
 
@@ -33,7 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	html, err := madopa.ConvertToHTML(string(content))
+	html, err := madopa.Convert(string(content), renderer.NewHTMLRenderer(nil))
 	if err != nil {
 		fmt.Printf("Error parsing markdow %v\n", err)
 		os.Exit(1)
