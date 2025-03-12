@@ -198,6 +198,40 @@ func (p *parser) parseInline(text string) []Inline {
 			}
 		}
 
+		// Parse link
+		if strings.HasPrefix(text[i:], "[") {
+			if currentText.Len() > 0 {
+				inlines = append(inlines, &Text{Content: currentText.String()})
+				currentText.Reset()
+			}
+
+			end := strings.Index(text[i+1:], "]")
+			// fmt.Println(text[i+1:i+1+end], string(text[i]), string(text[i+end+1]))
+
+			if end != -1 && text[i+2+end] == '(' {
+				// fmt.Println("valid link")
+				linkText := text[i+1 : i+1+end]
+				linkEnd := strings.Index(text[i+1+end+1:], ")")
+				if linkEnd != -1 {
+					linkURL := text[i+end+3 : i+end+linkEnd+2]
+					inlines = append(inlines, &Link{
+						Text: p.parseInline(linkText),
+						URL:  linkURL})
+					i += (1 + end + 1 + linkEnd + 1)
+					continue
+				} else {
+					currentText.WriteString("[")
+					i++
+					continue
+				}
+
+			} else {
+				currentText.WriteString("[")
+				i++
+				continue
+			}
+		}
+
 		currentText.WriteByte(text[i])
 		i++
 	}
@@ -313,4 +347,8 @@ func (p *parser) parseTableAlignments(delimiterLine string) []Alignment {
 		}
 	}
 	return alignments
+}
+
+func (p *parser) parseLink() (*Link, error) {
+	return nil, nil
 }

@@ -21,7 +21,7 @@ type BoldItalic struct {
 }
 
 type Link struct {
-	Text string
+	Text []Inline
 	URL  string
 }
 

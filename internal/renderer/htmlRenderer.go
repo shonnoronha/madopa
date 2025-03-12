@@ -172,6 +172,15 @@ func (r *HTMLRenderer) renderInlines(inlines []parser.Inline) error {
 			}
 			r.buffer.WriteString("</em>")
 
+		case *parser.Link:
+			r.buffer.WriteString("<a href=\"")
+			r.buffer.WriteString(i.URL)
+			r.buffer.WriteString("\">")
+			if err := r.renderInlines(i.Text); err != nil {
+				return err
+			}
+			r.buffer.WriteString("</a>")
+
 		default:
 			r.buffer.WriteString(fmt.Sprintf("<!-- Unsupported inline type: %T -->", i))
 		}

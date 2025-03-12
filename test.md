@@ -22,3 +22,5 @@ print('hello world from code block')
 |  `pwd`  |   Print working directory   |      `pwd`       |
 |  `rm`   | Remove files or directories | `rm -rf folder/` |
 |  `top`  |  Display running processes  |      `top`       |
+
+test the inline [**Test**](https://www.google.com) something else random
