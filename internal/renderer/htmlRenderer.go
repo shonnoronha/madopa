@@ -181,6 +181,15 @@ func (r *HTMLRenderer) renderInlines(inlines []parser.Inline) error {
 			}
 			r.buffer.WriteString("</a>")
 
+		case *parser.CodeInline:
+			r.buffer.WriteString("<code>")
+			content := i.Content
+			if r.opts.EscapeHTML {
+				content = html.EscapeString(content)
+			}
+			r.buffer.WriteString(content)
+			r.buffer.WriteString("</code>")
+
 		default:
 			r.buffer.WriteString(fmt.Sprintf("<!-- Unsupported inline type: %T -->", i))
 		}

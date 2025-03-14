@@ -24,3 +24,5 @@ print('hello world from code block')
 |  `top`  |  Display running processes  |      `top`       |
 
 test the inline [**Test**](https://www.google.com) something else random
+
+Does this render some `print('hello world')` code block?

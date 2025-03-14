@@ -232,6 +232,26 @@ func (p *parser) parseInline(text string) []Inline {
 			}
 		}
 
+		// Parse inline code
+		if strings.HasPrefix(text[i:], "`") {
+			if currentText.Len() > 0 {
+				inlines = append(inlines, &Text{Content: currentText.String()})
+				currentText.Reset()
+			}
+
+			end := strings.Index(text[i+1:], "`")
+			if end != -1 {
+				codeText := text[i+1 : i+1+end]
+				inlines = append(inlines, &CodeInline{Content: codeText})
+				i += (1 + end + 1)
+				continue
+			} else {
+				currentText.WriteString("`")
+				i++
+				continue
+			}
+		}
+
 		currentText.WriteByte(text[i])
 		i++
 	}

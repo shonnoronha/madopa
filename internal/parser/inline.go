@@ -25,8 +25,13 @@ type Link struct {
 	URL  string
 }
 
+type CodeInline struct {
+	Content string
+}
+
 func (t Text) isInline()       {}
 func (b Bold) isInline()       {}
 func (i Italic) isInline()     {}
 func (l Link) isInline()       {}
 func (b BoldItalic) isInline() {}
+func (c CodeInline) isInline() {}
