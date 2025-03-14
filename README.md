@@ -4,12 +4,12 @@ Madopa is a simple markdown parser that can be used to generate HTML from markdo
 
 ## TODOS
 
-- [ ] Server the generated HTML file
-- [ ] Add support for Nested Bold and Italic
+- [x] Server the generated HTML file
+- [x] Add support for Nested Bold and Italic
 - [ ] Add a renderer for PDF files
-- [ ] Parse and Render Tables
+- [x] Parse and Render Tables
 - [ ] Parse and Render Lists
 - [ ] Add support for images
-- [ ] Add support for links
-- [ ] Add Rendering support for code blocks
-- [ ] Support underline syntax for bold and italics
+- [x] Add support for links
+- [x] Add Rendering support for code blocks
+- [x] Support underline syntax for bold and italics
