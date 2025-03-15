@@ -14,12 +14,14 @@ type Paragraph struct {
 }
 
 type List struct {
-	Items []ListItem
+	Items []*ListItem
+	Type  ListType
 }
 
 type ListItem struct {
-	Level int
-	Text  []Inline
+	Level    int
+	Content  []Inline
+	Children *List
 }
 
 type CodeBlock struct {
@@ -44,6 +46,13 @@ const (
 	AlignLeft
 	AlignCenter
 	AlignRight
+)
+
+type ListType int
+
+const (
+	UnorderedList ListType = iota
+	OrderedList
 )
 
 func (h Heading) isBlock()   {}

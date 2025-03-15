@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/shonnnoronha/madopa/internal/renderer"
 	"github.com/shonnnoronha/madopa/pkg/madopa"
 )
 
@@ -34,7 +33,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	html, err := madopa.Convert(string(content), renderer.NewHTMLRenderer(nil))
+	renderer := &madopa.Renderer{}
+	renderer.SetIncludeCss(true)
+	renderer.SetCssFilePath("./internal/renderer/styles/dark_blog.css")
+	renderer.SetSyntaxHighlight(true)
+
+	html, err := madopa.Convert(string(content), renderer.NewHTMLRenderer())
 	if err != nil {
 		fmt.Printf("Error parsing markdow %v\n", err)
 		os.Exit(1)

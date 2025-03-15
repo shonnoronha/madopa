@@ -4,8 +4,15 @@ import (
 	"bytes"
 	"fmt"
 	"html"
+	"log"
+	"os"
 
 	"github.com/shonnnoronha/madopa/internal/parser"
+)
+
+const (
+	defaultCssFilePath    = "./internal/renderer/styles/dark_blog.css"
+	defaultScriptFilePath = "./internal/renderer/scripts/highlight.html"
 )
 
 type HTMLRenderer struct {
@@ -13,22 +20,7 @@ type HTMLRenderer struct {
 	opts   *Options
 }
 
-type Options struct {
-	EscapeHTML    bool
-	HardLineBreak bool
-	SoftLineBreak bool
-	AutoLink      bool
-	Strikethrough bool
-	Table         bool
-	TaskList      bool
-}
-
 func NewHTMLRenderer(opts *Options) *HTMLRenderer {
-	if opts == nil {
-		opts = &Options{
-			EscapeHTML: true,
-		}
-	}
 	return &HTMLRenderer{
 		buffer: &bytes.Buffer{},
 		opts:   opts,
@@ -38,10 +30,46 @@ func NewHTMLRenderer(opts *Options) *HTMLRenderer {
 func (r *HTMLRenderer) Render(doc *parser.Document) (string, error) {
 	r.buffer.Reset()
 
+	if r.opts.IncludeCSS {
+		cssFilePath := r.opts.CssFilePath
+		if cssFilePath == "" {
+			cssFilePath = defaultCssFilePath
+		}
+
+		r.buffer.WriteString("<!DOCTYPE html>\n")
+		r.buffer.WriteString("<html>\n<head>\n")
+		r.buffer.WriteString("<meta charset=\"UTF-8\">\n")
+		r.buffer.WriteString("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n")
+		r.buffer.WriteString("<title>Markdown Blog</title>\n")
+		r.buffer.WriteString("<style>\n")
+
+		cssContent, err := os.ReadFile(cssFilePath)
+		if err != nil {
+			log.Println("Error reading CSS file", err)
+			return "", err
+		}
+		r.buffer.Write(cssContent)
+		r.buffer.WriteString("\n</style>\n</head>\n<body>\n")
+
+		scriptContent, err := os.ReadFile(defaultScriptFilePath)
+		if err != nil {
+			log.Println("Error reading Script file", err)
+			return "", err
+		}
+		r.buffer.Write(scriptContent)
+
+		r.buffer.WriteString("<div class=\"container\">\n")
+		r.buffer.WriteString("<article class=\"post\">\n")
+	}
+
 	for _, block := range doc.Blocks {
 		if err := r.renderBlock(block); err != nil {
 			return "", err
 		}
+	}
+
+	if r.opts.IncludeCSS {
+		r.buffer.WriteString("\n</article>\n</div>\n</body>\n</html>")
 	}
 
 	return r.buffer.String(), nil
