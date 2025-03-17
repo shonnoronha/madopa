@@ -7,15 +7,24 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/shonnnoronha/madopa/pkg/madopa"
 )
 
 func main() {
+	startTime := time.Now()
+	defer func() {
+		fmt.Printf("Total execution time: %s\n", time.Since(startTime))
+	}()
+
 	inputFile := flag.String("input", "", "Input markdown file")
 	outputFile := flag.String("output", "", "Output HTML file")
 	serverFlag := flag.Bool("serve", false, "Serve the generated HTML file")
 	flag.Parse()
+
+	// debug input file
+	// *inputFile = "../../test.md"
 
 	if *inputFile == "" {
 		fmt.Println("Error: File file is required")

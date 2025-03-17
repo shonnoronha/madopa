@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"unicode"
 )
@@ -69,6 +70,11 @@ func (p *parser) parseBlock() (Block, error) {
 			p.pos = originalPos
 			p.readLine()
 		}
+	}
+
+	_, _, ok, _ := p.parseListItem(p.line)
+	if ok {
+		return p.parseList(p.line)
 	}
 
 	return p.parseParagraph()
@@ -369,6 +375,101 @@ func (p *parser) parseTableAlignments(delimiterLine string) []Alignment {
 	return alignments
 }
 
-func (p *parser) parseLink() (*Link, error) {
-	return nil, nil
+func (p *parser) parseList(line string) (*List, error) {
+	var items []*ListItem
+	var listType ListType
+
+	trimmedLine := strings.TrimLeftFunc(line, unicode.IsSpace)
+	if strings.HasPrefix(trimmedLine, "- ") || strings.HasPrefix(trimmedLine, "* ") {
+		listType = UnorderedList
+	} else {
+		listType = OrderedList
+	}
+
+	for p.pos <= len(p.input) {
+		inlineElements, level, isListItem, itemType := p.parseListItem(p.line)
+
+		if !isListItem {
+			break
+		}
+
+		newItem := &ListItem{
+			Level:   level,
+			Content: inlineElements,
+		}
+
+		if len(items) == 0 || level == 0 {
+			items = append(items, newItem)
+		} else {
+			parent := FindListItemParent(items, level)
+			if parent != nil {
+				if parent.Children == nil {
+					parent.Children = &List{
+						Items: []*ListItem{newItem},
+						Type:  itemType,
+					}
+				} else {
+					parent.Children.Items = append(parent.Children.Items, newItem)
+				}
+			} else {
+				items = append(items, newItem)
+			}
+		}
+
+		if p.pos >= len(p.input) {
+			break
+		}
+		p.readLine()
+
+		if strings.TrimSpace(p.line) == "" {
+			break
+		}
+
+		_, _, nextIsListItem, _ := p.parseListItem(p.line)
+		if !nextIsListItem {
+			break
+		}
+	}
+	return &List{
+		Items: items,
+		Type:  listType,
+	}, nil
+}
+
+func (p *parser) parseListItem(line string) ([]Inline, int, bool, ListType) {
+	trimmedLine := strings.TrimLeftFunc(line, unicode.IsSpace)
+	indentation := len(line) - len(trimmedLine)
+	level := indentation / 2
+
+	if strings.HasPrefix(trimmedLine, "- ") || strings.HasPrefix(trimmedLine, "* ") {
+		text := strings.TrimSpace(trimmedLine[2:])
+		return p.parseInline(text), level, true, UnorderedList
+	}
+
+	if match := regexp.MustCompile(`^\d+\.\s+`).FindString(trimmedLine); match != "" {
+		text := strings.TrimSpace(trimmedLine[len(match):])
+		return p.parseInline(text), level, true, OrderedList
+	}
+
+	return nil, 0, false, 0
+}
+
+func FindListItemParent(items []*ListItem, level int) *ListItem {
+	if len(items) == 0 {
+		return nil
+	}
+
+	for i := len(items) - 1; i >= 0; i-- {
+		item := items[i]
+
+		if item.Level == level-1 {
+			return item
+		}
+
+		if item.Children != nil && item.Level < level {
+			return FindListItemParent(item.Children.Items, level)
+		}
+	}
+
+	return nil
 }

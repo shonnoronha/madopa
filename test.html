@@ -250,6 +250,13 @@ ul.task-list {
 </script>
 <div class="container">
 <article class="post">
+<ul>
+<li>Parent
+<ul>
+<li>Grand child</li>
+</ul>
+</li>
+</ul>
 <h1>Hello world</h1>
 <p><strong><em>hello world <em>this</em> is a test for golang parser</em></strong></p>
 <p><em>test italic</em></p>
@@ -257,8 +264,9 @@ ul.task-list {
 <p><strong>test bold</strong></p>
 <p><strong>test bold 2</strong></p>
 <p><strong>hello <em>shons</em> world</strong></p>
-<p>- Single opening tag</p>
-<p>  \<em>\</em> Double opening tag</p>
+<ul>
+<li>Single opening tag</li>
+</ul>
 <pre><code class="py">print('hello world from code block')</code></pre>
 <table>
 <thead>
@@ -298,13 +306,26 @@ ul.task-list {
 </table>
 <p>test the inline <a href="./go.mod"><strong>Test</strong></a> something else random</p>
 <p>Does this render some <code>print('hello world')</code> code block?</p>
-<p>- List 1</p>
-<p>- List 2</p>
-<p>  1. List 3</p>
-<p>  1. List 4</p>
-<p>  1. Table 1</p>
-<p>  - Hello world</p>
-<p>- List 5</p>
+<ul>
+<li>List 1</li>
+<li>List 2
+<ul>
+<li>nested 1</li>
+<li>nested 2</li>
+<li>nested 3
+<ul>
+<li>super nested 1</li>
+<li>super nested 2
+<ul>
+<li>super super nested 1</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>List 3</li>
+</ul>
 <p>something else</p>
 <pre><code class="go">inputFile := flag.String("input", "", "Input markdown file")
 outputFile := flag.String("output", "", "Output HTML file")
@@ -326,6 +347,32 @@ if err != nil {
   fmt.Printf("Error while reading File %v\n", err)
   os.Exit(1)
 }</code></pre>
+<ul>
+<li>Item 1
+<ul>
+<li>Item 1.1
+<ul>
+<li>Item 1.1.1</li>
+<li>Item 1.1.2</li>
+</ul>
+</li>
+<li>Item 1.2</li>
+</ul>
+</li>
+<li>Item 2
+<ul>
+<li>Item 2.1
+<ul>
+<li>Item 2.1.1
+<ul>
+<li>Item 2.1.1.1</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
 </article>
 </div>

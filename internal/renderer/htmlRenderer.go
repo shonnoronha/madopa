@@ -162,6 +162,23 @@ func (r *HTMLRenderer) renderBlock(block parser.Block) error {
 
 		r.buffer.WriteString("</table>\n")
 
+	case *parser.List:
+		if b.Type == parser.OrderedList {
+			r.buffer.WriteString("<ol>\n")
+		} else {
+			r.buffer.WriteString("<ul>\n")
+		}
+
+		if err := r.renderListItems(b.Items); err != nil {
+			return err
+		}
+
+		if b.Type == parser.OrderedList {
+			r.buffer.WriteString("</ol>\n")
+		} else {
+			r.buffer.WriteString("</ul>\n")
+		}
+
 	default:
 		r.buffer.WriteString(fmt.Sprintf("<!-- Unsupported block type: %T -->\n", b))
 	}
@@ -221,6 +238,34 @@ func (r *HTMLRenderer) renderInlines(inlines []parser.Inline) error {
 		default:
 			r.buffer.WriteString(fmt.Sprintf("<!-- Unsupported inline type: %T -->", i))
 		}
+	}
+	return nil
+}
+
+func (r *HTMLRenderer) renderListItems(items []*parser.ListItem) error {
+	for _, item := range items {
+		r.buffer.WriteString("<li>")
+		if err := r.renderInlines(item.Content); err != nil {
+			return err
+		}
+		if item.Children != nil {
+			if item.Children.Type == parser.OrderedList {
+				r.buffer.WriteString("\n<ol>\n")
+			} else {
+				r.buffer.WriteString("\n<ul>\n")
+			}
+
+			if err := r.renderListItems(item.Children.Items); err != nil {
+				return err
+			}
+
+			if item.Children.Type == parser.OrderedList {
+				r.buffer.WriteString("</ol>\n")
+			} else {
+				r.buffer.WriteString("</ul>\n")
+			}
+		}
+		r.buffer.WriteString("</li>\n")
 	}
 	return nil
 }

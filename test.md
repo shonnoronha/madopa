@@ -1,3 +1,6 @@
+- Parent
+  - Grand child
+
 # Hello world
 
 **_hello world *this* is a test for golang parser_**
@@ -29,11 +32,13 @@ Does this render some `print('hello world')` code block?
 
 - List 1
 - List 2
-  1. List 3
-  1. List 4
-  1. Table 1
-  - Hello world
-- List 5
+  - nested 1
+  - nested 2
+  - nested 3
+    - super nested 1
+    - super nested 2
+      - super super nested 1
+- List 3
 
 something else
 
@@ -59,3 +64,13 @@ if err != nil {
   os.Exit(1)
 }
 ```
+
+- Item 1
+  - Item 1.1
+    - Item 1.1.1
+    - Item 1.1.2
+  - Item 1.2
+- Item 2
+  - Item 2.1
+    - Item 2.1.1
+      - Item 2.1.1.1
