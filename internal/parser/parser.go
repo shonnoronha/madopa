@@ -258,6 +258,56 @@ func (p *parser) parseInline(text string) []Inline {
 			}
 		}
 
+		// Parse image
+		if strings.HasPrefix(text[i:], "!") {
+			if currentText.Len() > 0 {
+				inlines = append(inlines, &Text{Content: currentText.String()})
+				currentText.Reset()
+			}
+
+			if strings.HasPrefix(text[i+1:], "[") {
+				end := strings.Index(text[i+2:], "]")
+				if end != -1 && strings.HasPrefix(text[i+2+end+1:], "(") {
+					altText := text[i+2 : i+2+end]
+
+					urlStart := i + 2 + end + 2
+					urlAndTitle := text[urlStart:]
+					urlAndTitleEnd := strings.Index(urlAndTitle, ")")
+
+					if urlAndTitleEnd != -1 {
+						urlAndTitle = urlAndTitle[:urlAndTitleEnd]
+
+						titleMatch := regexp.MustCompile(`^(.*?)\s+(.*?)$`).FindStringSubmatch(urlAndTitle)
+
+						var linkURL, title string
+
+						if titleMatch != nil {
+							linkURL = titleMatch[1]
+							title = titleMatch[2]
+
+							if strings.HasPrefix(title, "\"") && strings.HasSuffix(title, "\"") {
+								title = title[1 : len(title)-1]
+							}
+						} else {
+							linkURL = urlAndTitle
+						}
+
+						inlines = append(inlines,
+							&Image{
+								Alt:   altText,
+								Src:   linkURL,
+								Title: title,
+							},
+						)
+
+						i += (2 + end + 2 + urlAndTitleEnd + 1)
+						continue
+					}
+
+				}
+			}
+		}
+
 		currentText.WriteByte(text[i])
 		i++
 	}

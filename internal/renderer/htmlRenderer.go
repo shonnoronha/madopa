@@ -235,6 +235,31 @@ func (r *HTMLRenderer) renderInlines(inlines []parser.Inline) error {
 			r.buffer.WriteString(content)
 			r.buffer.WriteString("</code>")
 
+		case *parser.Image:
+			r.buffer.WriteString("<img src=\"")
+			if r.opts.EscapeHTML {
+				r.buffer.WriteString(html.EscapeString(i.Src))
+			} else {
+				r.buffer.WriteString(i.Src)
+			}
+			r.buffer.WriteString("\" alt=\"")
+			if r.opts.EscapeHTML {
+				r.buffer.WriteString(html.EscapeString(i.Alt))
+			} else {
+				r.buffer.WriteString(i.Alt)
+			}
+			r.buffer.WriteString("\"")
+			if i.Title != "" {
+				r.buffer.WriteString("\" title=\"")
+				if r.opts.EscapeHTML {
+					r.buffer.WriteString(html.EscapeString(i.Title))
+				} else {
+					r.buffer.WriteString(i.Title)
+				}
+				r.buffer.WriteString("\"")
+			}
+			r.buffer.WriteString(">")
+
 		default:
 			r.buffer.WriteString(fmt.Sprintf("<!-- Unsupported inline type: %T -->", i))
 		}

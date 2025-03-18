@@ -43,6 +43,7 @@ func main() {
 	}
 
 	renderer := &madopa.Renderer{}
+	renderer.SetEscapeHTML(true)
 	renderer.SetIncludeCss(true)
 	renderer.SetCssFilePath("./internal/renderer/styles/dark_blog.css")
 	renderer.SetSyntaxHighlight(true)
