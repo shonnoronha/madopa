@@ -39,6 +39,16 @@ type TableCell struct {
 	Content []Inline
 }
 
+type Blockquote struct {
+	Items []*BlockquoteItem
+}
+
+type BlockquoteItem struct {
+	Level    int
+	Content  []Inline
+	Children *Blockquote
+}
+
 type Alignment int
 
 const (
@@ -55,9 +65,10 @@ const (
 	OrderedList
 )
 
-func (h Heading) isBlock()   {}
-func (p Paragraph) isBlock() {}
-func (l List) isBlock()      {}
-func (li ListItem) isBlock() {}
-func (c CodeBlock) isBlock() {}
-func (t Table) isBlock()     {}
+func (h Heading) isBlock()    {}
+func (p Paragraph) isBlock()  {}
+func (l List) isBlock()       {}
+func (li ListItem) isBlock()  {}
+func (c CodeBlock) isBlock()  {}
+func (t Table) isBlock()      {}
+func (b Blockquote) isBlock() {}

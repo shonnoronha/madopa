@@ -29,7 +29,7 @@ func (p *parser) parse() (*Document, error) {
 			continue
 		}
 
-		block, err := p.parseBlock()
+		block, err := p.parseBlock(p.line)
 		// fmt.Printf("Block type: %T\n", block)
 		if err != nil {
 			return nil, err
@@ -41,8 +41,8 @@ func (p *parser) parse() (*Document, error) {
 	return doc, nil
 }
 
-func (p *parser) parseBlock() (Block, error) {
-	trimmedLine := strings.TrimLeftFunc(p.line, unicode.IsSpace)
+func (p *parser) parseBlock(line string) (Block, error) {
+	trimmedLine := strings.TrimLeftFunc(line, unicode.IsSpace)
 
 	if strings.HasPrefix(trimmedLine, "#") {
 		return p.parseHeading()
@@ -70,6 +70,10 @@ func (p *parser) parseBlock() (Block, error) {
 			p.pos = originalPos
 			p.readLine()
 		}
+	}
+
+	if strings.HasPrefix(trimmedLine, ">") {
+		return p.parseBlockquote()
 	}
 
 	_, _, ok, _ := p.parseListItem(p.line)
@@ -522,4 +526,67 @@ func FindListItemParent(items []*ListItem, level int) *ListItem {
 	}
 
 	return nil
+}
+
+func FindBlockQuoteItemParent(items []*BlockquoteItem, level int) *BlockquoteItem {
+	if len(items) == 0 {
+		return nil
+	}
+
+	for i := len(items) - 1; i >= 0; i-- {
+		item := items[i]
+
+		if item.Level == level-1 {
+			return item
+		}
+
+		if item.Children != nil && item.Level < level {
+			return FindBlockQuoteItemParent(item.Children.Items, level)
+		}
+	}
+	return nil
+}
+
+func (p *parser) parseBlockquote() (*Blockquote, error) {
+	blockquote := &Blockquote{}
+
+	blockquote.Items = append(blockquote.Items, &BlockquoteItem{
+		Content: p.parseInline(p.line[1:]),
+		Level:   1,
+	})
+
+	for p.pos < len(p.input) {
+		p.readLine()
+		trimmedLine := strings.TrimSpace(p.line)
+
+		if strings.HasPrefix(trimmedLine, ">") {
+			level := strings.Count(trimmedLine, ">")
+			trimmedLine = strings.TrimSpace(p.line[2*level-1:])
+			if trimmedLine != "" {
+				newItem := &BlockquoteItem{
+					Content: p.parseInline(trimmedLine),
+					Level:   level,
+				}
+				if level == 1 {
+					blockquote.Items = append(blockquote.Items, newItem)
+				} else {
+					parent := FindBlockQuoteItemParent(blockquote.Items, level)
+					if parent != nil {
+						if parent.Children == nil {
+							parent.Children = &Blockquote{
+								Items: []*BlockquoteItem{newItem},
+							}
+						} else {
+							parent.Children.Items = append(parent.Children.Items, newItem)
+						}
+					}
+				}
+				fmt.Println(level, trimmedLine)
+			}
+
+		} else {
+			break
+		}
+	}
+	return blockquote, nil
 }

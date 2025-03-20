@@ -179,6 +179,15 @@ func (r *HTMLRenderer) renderBlock(block parser.Block) error {
 			r.buffer.WriteString("</ul>\n")
 		}
 
+	case *parser.Blockquote:
+		r.buffer.WriteString("<blockquote>")
+
+		if err := r.renderBlockQuoteItems(b.Items); err != nil {
+			return err
+		}
+
+		r.buffer.WriteString("</blockquote>")
+
 	default:
 		r.buffer.WriteString(fmt.Sprintf("<!-- Unsupported block type: %T -->\n", b))
 	}
@@ -291,6 +300,25 @@ func (r *HTMLRenderer) renderListItems(items []*parser.ListItem) error {
 			}
 		}
 		r.buffer.WriteString("</li>\n")
+	}
+	return nil
+}
+
+func (r *HTMLRenderer) renderBlockQuoteItems(items []*parser.BlockquoteItem) error {
+	for _, item := range items {
+		err := r.renderInlines(item.Content)
+		r.buffer.WriteString("<br>")
+		if err != nil {
+			return err
+		}
+
+		if item.Children != nil {
+			r.buffer.WriteString("<blockquote>")
+			if err := r.renderBlockQuoteItems(item.Children.Items); err != nil {
+				return err
+			}
+			r.buffer.WriteString("</blockquote>")
+		}
 	}
 	return nil
 }
